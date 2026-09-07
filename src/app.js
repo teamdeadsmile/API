@@ -57,42 +57,61 @@ export function createApp() {
     app.set('trust proxy', 1);
   }
 
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: CSP_DIRECTIVES,
-      },
-      crossOriginEmbedderPolicy: true,
-      crossOriginOpenerPolicy: {
-        policy: 'same-origin',
-      },
-      crossOriginResourcePolicy: {
-        policy: 'same-origin',
-      },
-      referrerPolicy: {
-        policy: 'strict-origin-when-cross-origin',
-      },
-      hsts: env.isProduction
-        ? {
-            maxAge: 31_536_000,
-            includeSubDomains: true,
-            preload: true,
-          }
-        : false,
-      permittedCrossDomainPolicies: {
-        permittedPolicies: 'none',
-      },
-      dnsPrefetchControl: {
-        allow: false,
-      },
-      frameguard: {
-        action: 'deny',
-      },
-      noSniff: true,
-      xssFilter: true,
-      originAgentCluster: true,
-    })
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: CSP_DIRECTIVES,
+    },
+
+    crossOriginEmbedderPolicy: true,
+
+    crossOriginOpenerPolicy: {
+      policy: 'same-origin',
+    },
+
+    crossOriginResourcePolicy: {
+      policy: 'same-origin',
+    },
+
+    referrerPolicy: {
+      policy: 'strict-origin-when-cross-origin',
+    },
+
+    hsts: env.isProduction
+      ? {
+          maxAge: 31_536_000,
+          includeSubDomains: true,
+          preload: true,
+        }
+      : false,
+
+    permittedCrossDomainPolicies: {
+      permittedPolicies: 'none',
+    },
+
+    dnsPrefetchControl: {
+      allow: false,
+    },
+
+    frameguard: {
+      action: 'deny',
+    },
+
+    noSniff: true,
+
+    xssFilter: true,
+
+    originAgentCluster: true,
+  })
+);
+app.use((_req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
   );
+
+  next();
+});
 
   app.use(
     cors({
