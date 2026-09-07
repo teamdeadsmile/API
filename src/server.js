@@ -5,6 +5,6 @@ const app = createApp();
 
 app.listen(env.port, () => {
   console.log(
-    `Deadsmile Games API — port ${env.port} [${env.nodeEnv}]`
+    `API — port ${env.port} [${env.nodeEnv}]`
   );
 });
