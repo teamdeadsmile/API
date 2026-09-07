@@ -1,3 +1,20 @@
+const PUBLIC_ROUTES = new Set([
+  "GET /api/health",
+
+  "POST /api/auth/login",
+
+  "GET /api/games",
+  "GET /api/news",
+  "GET /api/videos",
+  "GET /api/downloads",
+  "GET /api/products",
+  "GET /api/search",
+
+  "POST /api/newsletter",
+
+  "GET /api/support",
+]);
+
 function normalizePath(path) {
   if (!path) return "";
 
@@ -47,8 +64,18 @@ function convertParams(path) {
   return path.replace(/:([A-Za-z0-9_]+)/g, "{$1}");
 }
 
+function isPublicRoute(path, method) {
+  const route = `${method.toUpperCase()} ${normalizePath(path)}`;
+
+  return PUBLIC_ROUTES.has(route);
+}
+
 function addOperation(paths, path, method) {
   if (!path || path === "/") return;
+
+  if (!isPublicRoute(path, method)) {
+    return;
+  }
 
   const openApiPath = convertParams(normalizePath(path));
 
@@ -111,33 +138,22 @@ export function createSwaggerSpec(app) {
     openapi: "3.0.0",
 
     info: {
-      title: "API Documentation",
+      title: "DEADSMILE GAMES API",
       version: "1.0.0",
       description:
-        "API Documentation",
+        "Public API documentation for DEADSMILE GAMES.",
     },
 
     servers: [
       {
         url: "https://apideadsmile.vercel.app",
-        description: "API Documentation",
+        description: "DEADSMILE GAMES API — Production",
       },
       {
         url: "http://localhost:5000",
-        description: "API Documentation",
+        description: "DEADSMILE GAMES API — Development",
       },
     ],
-
-    components: {
-      securitySchemes: {
-        BearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-          description: "Enter your JWT token.",
-        },
-      },
-    },
 
     paths,
   };
