@@ -4,5 +4,7 @@ import { env } from './config/env.js';
 const app = createApp();
 
 app.listen(env.port, () => {
-  console.log(`Deadsmile Games API — port ${env.port} [${env.nodeEnv}]`);
+  console.log(
+    `Deadsmile Games API — port ${env.port} [${env.nodeEnv}]`
+  );
 });
