@@ -138,7 +138,7 @@ export function createSwaggerSpec(app) {
     openapi: "3.0.0",
 
     info: {
-      title: "DEADSMILE GAMES API",
+      title: "API Documentation",
       version: "1.0.0",
       description:
         "Public API documentation for DEADSMILE GAMES.",
@@ -147,11 +147,11 @@ export function createSwaggerSpec(app) {
     servers: [
       {
         url: "https://apideadsmile.vercel.app",
-        description: "DEADSMILE GAMES API — Production",
+        description: "API Documentation — Production",
       },
       {
         url: "http://localhost:5000",
-        description: "DEADSMILE GAMES API — Development",
+        description: "API Documentation — Development",
       },
     ],
 
