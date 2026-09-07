@@ -115,7 +115,7 @@ app.use((_req, res, next) => {
 
   app.use(
     cors({
-      origin: env.frontendUrl,
+      origin: env.frontendUrl || 'http://localhost:5173',
       credentials: true,
       methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
