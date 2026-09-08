@@ -5,7 +5,6 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import hpp from "hpp";
-import { createSwaggerSpec } from "./config/swagger.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
