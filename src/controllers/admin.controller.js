@@ -13,8 +13,13 @@ export const video = asyncHandler(async (req, res) => {
 });
 
 export const game = asyncHandler(async (req, res) => {
-  const result = await service.publishGame(req.body);
-  sendSuccess(res, result, 201);
+  try {
+    const result = await service.publishGame(req.body);
+    sendSuccess(res, result, 201);
+  } catch (err) {
+    console.error('Erro ao criar game:', err); // LOG
+    throw err;
+  }
 });
 
 export const deleteNewsletter = asyncHandler(async (req, res) => {
@@ -31,3 +36,4 @@ export const deleteGame = asyncHandler(async (req, res) => {
   const result = await service.removeGame(req.params.id);
   sendSuccess(res, result);
 });
+
