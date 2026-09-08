@@ -66,6 +66,7 @@ const SESSION_COOKIE_OPTIONS = {
     secure: env.isProduction,
     sameSite: env.isProduction ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7,
+    partitioned: env.isProduction,
 };
 
 export function createApp() {
