@@ -30,3 +30,11 @@ export async function listWishlist(userId) {
   );
   return rows;
 }
+
+export async function checkWishlist(userId, gameId) {
+  const { rows } = await query(
+    'SELECT 1 FROM wishlists WHERE user_id = $1 AND game_id = $2 LIMIT 1',
+    [userId, gameId]
+  );
+  return rows.length > 0;
+}

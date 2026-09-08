@@ -17,3 +17,8 @@ export const list = asyncHandler(async (req, res) => {
   const result = await service.listWishlist(req.session.userId);
   sendSuccess(res, result);
 });
+export const check = asyncHandler(async (req, res) => {
+  const gameId = parseInt(req.params.gameId, 10);
+  const result = await service.checkWishlist(req.session.userId, gameId);
+  sendSuccess(res, { inWishlist: result });
+});

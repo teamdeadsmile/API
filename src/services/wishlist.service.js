@@ -16,3 +16,7 @@ export async function removeWishlist(userId, gameId) {
 export async function listWishlist(userId) {
   return repo.listWishlist(userId);
 }
+
+export async function checkWishlist(userId, gameId) {
+  return repo.checkWishlist(userId, gameId);
+}

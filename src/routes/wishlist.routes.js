@@ -15,3 +15,4 @@ wishlistRouter.use(requireAuth);
 wishlistRouter.post('/', validate(addSchema), controller.add);
 wishlistRouter.delete('/:gameId', controller.remove);
 wishlistRouter.get('/', controller.list);
+wishlistRouter.get('/:gameId/check', controller.check);
