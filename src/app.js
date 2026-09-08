@@ -201,6 +201,8 @@ export function createApp() {
     app.use("/api/products", productsRouter);
     app.use("/api/wishlist", wishlistRouter);
 
+    const swaggerSpec = createSwaggerSpec(app);
+
     app.use("/api", notFoundHandler);
     app.use(errorHandler);
 
