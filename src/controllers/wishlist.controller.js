@@ -9,7 +9,8 @@ export const add = asyncHandler(async (req, res) => {
 });
 
 export const remove = asyncHandler(async (req, res) => {
-  const result = await service.removeWishlist(req.session.userId, parseInt(req.params.gameId, 10));
+  const { gameId } = req.params;
+  const result = await service.removeWishlist(req.session.userId, gameId);
   sendSuccess(res, result);
 });
 
@@ -17,8 +18,9 @@ export const list = asyncHandler(async (req, res) => {
   const result = await service.listWishlist(req.session.userId);
   sendSuccess(res, result);
 });
+
 export const check = asyncHandler(async (req, res) => {
-  const gameId = parseInt(req.params.gameId, 10);
+  const { gameId } = req.params;
   const result = await service.checkWishlist(req.session.userId, gameId);
   sendSuccess(res, { inWishlist: result });
 });
