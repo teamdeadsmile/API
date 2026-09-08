@@ -12,10 +12,10 @@ const httpsUrl = z
 const avatarUrl = z
   .string()
   .trim()
-  .max(100000)
+  .max(500_000)
   .refine(
-    (v) => !v || v.startsWith('https://') || v.startsWith('/'),
-    'Avatar must be an HTTPS URL or a relative path.'
+    (v) => !v || v.startsWith('data:image/') || v.startsWith('https://') || v.startsWith('/'),
+    'Avatar must be a data URL, HTTPS URL, or relative path.'
   )
   .optional()
   .nullable();
