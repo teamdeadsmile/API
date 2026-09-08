@@ -51,15 +51,17 @@ export async function createGame({
 
     const gameResult = await client.query(
       `INSERT INTO games
-         (title, slug, short_description, description, status,
-          release_date, hero_image, cover_image, trailer_url, featured)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING *`,
+        (title, slug, short_description, description, status,
+          release_date, hero_image, cover_image, trailer_url, featured,
+          purchase_url, download_url)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING *`,
       [
         title, slug, shortDescription, description || null,
         status || 'announced', releaseDate || null,
         heroImage || null, coverImage || null,
-        trailerUrl || null, !!featured, purchaseUrl || null, downloadUrl || null,
+        trailerUrl || null, !!featured,
+        purchaseUrl || null, downloadUrl || null,
       ]
     );
 
