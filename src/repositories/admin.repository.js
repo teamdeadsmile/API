@@ -41,7 +41,7 @@ export async function createVideo({ title, category, thumbnail, videoUrl, durati
 
 export async function createGame({
   title, slug, shortDescription, description,
-  status, releaseDate, heroImage, coverImage,
+  status, releaseDate, heroImage, coverImage, purchaseUrl, downloadUrl,
   trailerUrl, featured, genres = [], platforms = [],
 }) {
   const client = await pool.connect();
@@ -59,7 +59,7 @@ export async function createGame({
         title, slug, shortDescription, description || null,
         status || 'announced', releaseDate || null,
         heroImage || null, coverImage || null,
-        trailerUrl || null, !!featured,
+        trailerUrl || null, !!featured, purchaseUrl || null, downloadUrl || null,
       ]
     );
 

@@ -46,5 +46,7 @@ export const gamePostSchema = z
     featured:         z.boolean().default(false),
     genres:           z.array(z.string().trim().min(1).max(50)).max(10).default([]),
     platforms:        z.array(z.string().trim().min(1).max(50)).max(10).default([]),
+    purchaseUrl: z.string().trim().max(2_000).url().optional().nullable(),
+    downloadUrl: z.string().trim().max(2_000).url().optional().nullable(),
   })
   .strict();

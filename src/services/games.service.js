@@ -15,6 +15,8 @@ function toClientGame(row) {
     featured:         row.featured,
     genres:           row.genres    || [],
     platforms:        row.platforms || [],
+    purchaseUrl:      row.purchase_url || null,
+    downloadUrl:      row.download_url || null,
   };
 }
 
