@@ -138,15 +138,20 @@ export function createApp() {
         next();
     });
 
-    app.use(
-        cors({
-            origin: env.frontendUrl,
-            credentials: true,
-            methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-            allowedHeaders: ["Content-Type", "X-CSRF-Token"],
-        }),
-    );
+    const allowedOrigins = [
+      env.frontendUrl,
+      'http://localhost:5173',
+      'http://localhost:8081',
+    ];
 
+    app.use(
+      cors({
+        origin: allowedOrigins,
+        credentials: true,
+        methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "X-CSRF-Token"],
+      })
+    );
     app.use(hpp());
 
     app.use(
