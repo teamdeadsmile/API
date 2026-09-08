@@ -5,7 +5,7 @@ import { z } from 'zod';
 import * as controller from '../controllers/wishlist.controller.js';
 
 const addSchema = z.object({
-  gameId: z.coerce.number().int().positive(),
+  gameId: z.string().uuid(),
 });
 
 export const wishlistRouter = Router();
