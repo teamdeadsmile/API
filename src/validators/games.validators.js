@@ -15,10 +15,5 @@ export const listGamesSchema = z.object({
 });
 
 export const gameSlugSchema = z.object({
-  slug: z
-    .string()
-    .trim()
-    .min(1)
-    .max(120)
-    .regex(/^[a-z0-9-]+$/, 'Invalid game identifier.'),
+
 });
