@@ -4,18 +4,7 @@ import { registerUser, authenticateUser } from '../services/auth.service.js';
 import { getAccount } from '../services/account.service.js';
 import { env } from '../config/env.js';
 import { verifyTotpLogin } from '../services/totp.service.js';
-
-export const verifyTwoFactor = asyncHandler(async (req, res) => {
-  const { userId, token } = req.body;
-  const valid = await verifyTotpLogin(userId, token);
-  if (!valid) {
-    throw new AppError(400, 'INVALID_TOTP', 'Invalid 2FA code.');
-  }
-  await regenerateSession(req);
-  req.session.userId = userId;
-  req.session.role = (await getAccount(userId)).role;
-  sendSuccess(res, await getAccount(userId));
-});
+import { AppError } from '../utils/AppError.js';
 
 function regenerateSession(req) {
   return new Promise((resolve, reject) => {
@@ -29,11 +18,23 @@ function destroySession(req) {
   });
 }
 
+export const verifyTwoFactor = asyncHandler(async (req, res) => {
+  const { userId, token } = req.body;
+  const valid = await verifyTotpLogin(userId, token);
+  if (!valid) {
+    throw new AppError(400, 'INVALID_TOTP', 'Invalid 2FA code.');
+  }
+  await regenerateSession(req);
+  req.session.userId = userId;
+  req.session.role = (await getAccount(userId)).role;
+  sendSuccess(res, await getAccount(userId));
+});
+
 export const register = asyncHandler(async (req, res) => {
   const user = await registerUser(req.body);
   await regenerateSession(req);
   req.session.userId = user.id;
-  req.session.role   = user.role;
+  req.session.role = user.role;
   sendSuccess(res, user, 201);
 });
 
@@ -52,9 +53,9 @@ export const logout = asyncHandler(async (req, res) => {
   await destroySession(req);
   res.clearCookie('deadsmile.sid', {
     httpOnly: true,
-    secure:   env.isProduction,
+    secure: env.isProduction,
     sameSite: env.cookieSameSite,
-    path:     '/',
+    path: '/',
   });
   sendSuccess(res, { loggedOut: true });
 });
