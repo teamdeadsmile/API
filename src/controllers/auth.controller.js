@@ -3,6 +3,20 @@ import { sendSuccess } from '../utils/apiResponse.js';
 import { registerUser, authenticateUser } from '../services/auth.service.js';
 import { getAccount } from '../services/account.service.js';
 import { env } from '../config/env.js';
+import { verifyTotpLogin } from '../services/totp.service.js';
+import { getAccount } from '../services/account.service.js';
+
+export const verifyTwoFactor = asyncHandler(async (req, res) => {
+  const { userId, token } = req.body;
+  const valid = await verifyTotpLogin(userId, token);
+  if (!valid) {
+    throw new AppError(400, 'INVALID_TOTP', 'Invalid 2FA code.');
+  }
+  await regenerateSession(req);
+  req.session.userId = userId;
+  req.session.role = (await getAccount(userId)).role;
+  sendSuccess(res, await getAccount(userId));
+});
 
 function regenerateSession(req) {
   return new Promise((resolve, reject) => {
@@ -25,11 +39,14 @@ export const register = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const user = await authenticateUser(req.body);
+  const result = await authenticateUser(req.body);
+  if (result.requiresTwoFactor) {
+    return sendSuccess(res, { requiresTwoFactor: true, userId: result.userId });
+  }
   await regenerateSession(req);
-  req.session.userId = user.id;
-  req.session.role   = user.role;
-  sendSuccess(res, user);
+  req.session.userId = result.id;
+  req.session.role = result.role;
+  sendSuccess(res, result);
 });
 
 export const logout = asyncHandler(async (req, res) => {

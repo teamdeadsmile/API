@@ -11,3 +11,4 @@ authRouter.post('/register', registerLimiter, validate(registerSchema), register
 authRouter.post('/login',    loginLimiter,    validate(loginSchema),    login);
 authRouter.post('/logout',   requireAuth,                               logout);
 authRouter.get('/me',        requireAuth,                               me);
+authRouter.post('/verify-2fa', validate(totpTokenSchema), verifyTwoFactor);
