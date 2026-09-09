@@ -194,6 +194,7 @@ export function createApp() {
     app.use("/api/search", searchRouter);
     app.use("/api/account", accountRouter);
     app.use("/api/newsletter", newsletterRouter);
+    app.use("/api/support", supportRouter);
     app.use("/api/news", newsRouter);
     app.use("/api/videos", videosRouter);
     app.use("/api/downloads", downloadsRouter);
