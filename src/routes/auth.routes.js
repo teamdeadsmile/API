@@ -4,6 +4,8 @@ import { loginLimiter, registerLimiter } from '../middleware/rateLimiters.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { registerSchema, loginSchema } from '../validators/auth.validators.js';
 import { register, login, logout, me } from '../controllers/auth.controller.js';
+import { verifyTwoFactor } from '../controllers/auth.controller.js';
+import { totpTokenSchema } from '../validators/totp.validators.js';
 
 export const authRouter = Router();
 
