@@ -16,7 +16,7 @@ export const remove = asyncHandler(async (req, res) => {
 
 export const list = asyncHandler(async (req, res) => {
   const result = await service.listWishlist(req.session.userId);
-  sendSuccs(res, result);
+  sendSuccess(res, result);
 });
 
 export const check = asyncHandler(async (req, res) => {

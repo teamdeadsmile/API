@@ -11,8 +11,3 @@ const addSchema = z.object({
 export const wishlistRouter = Router();
 
 wishlistRouter.use(requireAuth);
-
-wishlistRouter.get('/', controller.list);
-wishlistRouter.post('/', validate(addSchema), controller.add);
-wishlistRouter.delete('/:gameId', controller.remove);
-wishlistRouter.get('/:gameId/check', controller.check);
