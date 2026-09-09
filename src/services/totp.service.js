@@ -9,8 +9,7 @@ export async function generateTotpSetup(userId, email) {
     length: 20,
   });
   await repo.upsertTotpSecret(userId, secret.base32);
-  const otpauthUrl = secret.otpauth_url;
-  const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
+  const qrCodeDataUrl = await QRCode.toDataURL(secret.otpauth_url);
   return { secret: secret.base32, qrCodeDataUrl };
 }
 
@@ -46,17 +45,11 @@ export async function disableTotp(userId, token) {
 
 export async function verifyTotpLogin(userId, token) {
   const totp = await repo.findTotpByUserId(userId);
-  console.log('[verifyTotpLogin] totp:', totp);
-  if (!totp || !totp.enabled) {
-    console.log('[verifyTotpLogin] 2FA not enabled or not found');
-    return false;
-  }
-  const verified = speakeasy.totp.verify({
+  if (!totp || !totp.enabled) return false;
+  return speakeasy.totp.verify({
     secret: totp.secret,
     encoding: 'base32',
     token,
     window: 2,
   });
-  console.log('[verifyTotpLogin] verified:', verified);
-  return verified;
 }

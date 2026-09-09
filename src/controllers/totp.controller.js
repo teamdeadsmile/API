@@ -9,11 +9,6 @@ export const setup = asyncHandler(async (req, res) => {
   sendSuccess(res, result);
 });
 
-export const status = asyncHandler(async (req, res) => {
-  const totp = await repo.findTotpByUserId(req.session.userId);
-  sendSuccess(res, { enabled: !!(totp && totp.enabled) });
-});
-
 export const enable = asyncHandler(async (req, res) => {
   const { token } = req.body;
   const result = await totpService.verifyAndEnableTotp(req.session.userId, token);

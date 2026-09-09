@@ -24,10 +24,11 @@ export const verifyTwoFactor = asyncHandler(async (req, res) => {
   if (!valid) {
     throw new AppError(400, 'INVALID_TOTP', 'Invalid 2FA code.');
   }
+  const user = await getAccount(userId);
   await regenerateSession(req);
   req.session.userId = userId;
-  req.session.role = (await getAccount(userId)).role;
-  sendSuccess(res, await getAccount(userId));
+  req.session.role = user.role;
+  sendSuccess(res, user);
 });
 
 export const register = asyncHandler(async (req, res) => {
