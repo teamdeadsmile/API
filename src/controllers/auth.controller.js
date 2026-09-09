@@ -4,7 +4,6 @@ import { registerUser, authenticateUser } from '../services/auth.service.js';
 import { getAccount } from '../services/account.service.js';
 import { env } from '../config/env.js';
 import { verifyTotpLogin } from '../services/totp.service.js';
-import { getAccount } from '../services/account.service.js';
 
 export const verifyTwoFactor = asyncHandler(async (req, res) => {
   const { userId, token } = req.body;
