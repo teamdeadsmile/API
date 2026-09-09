@@ -46,12 +46,20 @@ export async function disableTotp(userId, token) {
 
 export async function verifyTotpLogin(userId, token) {
   const totp = await repo.findTotpByUserId(userId);
-  if (!totp || !totp.enabled) return false;
+  console.log('[verifyTotpLogin] userId:', userId);
+  console.log('[verifyTotpLogin] totp found:', totp);
+  if (!totp || !totp.enabled) {
+    console.log('[verifyTotpLogin] 2FA not enabled for user');
+    return false;
+  }
+  console.log('[verifyTotpLogin] secret:', totp.secret);
+  console.log('[verifyTotpLogin] token received:', token);
   const verified = speakeasy.totp.verify({
     secret: totp.secret,
     encoding: 'base32',
-    token,
+    token: token.trim(),
     window: 1,
   });
+  console.log('[verifyTotpLogin] verification result:', verified);
   return verified;
 }
