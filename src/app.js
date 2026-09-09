@@ -192,6 +192,13 @@ export function createApp() {
     app.use("/api/admin", adminBodyLimiter, adminRouter);
     app.use("/api/games", gamesRouter);
     app.use("/api/search", searchRouter);
+    app.use("/api/account", accountRouter);
+    app.use("/api/newsletter", newsletterRouter);
+    app.use("/api/support", supportRouter);
+    app.use("/api/news", newsRouter);
+    app.use("/api/videos", videosRouter);
+    app.use("/api/downloads", downloadsRouter);
+    app.use("/api/products", productsRouter);
     app.use("/api/wishlist", wishlistRouter);
 
     app.use("/api", notFoundHandler);
