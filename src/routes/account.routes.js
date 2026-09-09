@@ -16,3 +16,4 @@ accountRouter.delete('/',               requireAuth, validate(deleteAccountSchem
 accountRouter.get('/totp/setup', requireAuth, totpController.setup);
 accountRouter.post('/totp/enable', requireAuth, validate(totpTokenSchema), totpController.enable);
 accountRouter.delete('/totp/disable', requireAuth, validate(totpTokenSchema), totpController.disable);
+accountRouter.get('/totp/status', requireAuth, totpController.status);
