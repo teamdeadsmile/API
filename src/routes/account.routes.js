@@ -5,8 +5,6 @@ import { updateAccountSchema, deleteAccountSchema } from '../validators/account.
 import { show, update, remove, publicProfile } from '../controllers/account.controller.js';
 import * as totpController from '../controllers/totp.controller.js';
 import { totpTokenSchema } from '../validators/totp.validators.js';
-import { validate } from '../middleware/validate.js';
-import { requireAuth } from '../middleware/requireAuth.js';
 
 
 export const accountRouter = Router();
