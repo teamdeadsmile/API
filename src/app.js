@@ -188,7 +188,6 @@ export function createApp() {
         });
     });
 
-    app.use("/api/auth", authRouter);
     app.use("/api/admin", adminBodyLimiter, adminRouter);
     app.use("/api/games", gamesRouter);
     app.use("/api/search", searchRouter);
