@@ -13,7 +13,7 @@ accountRouter.get('/profile/:username', publicProfile);
 accountRouter.get('/',                  requireAuth,                           show);
 accountRouter.patch('/',                requireAuth, validate(updateAccountSchema), update);
 accountRouter.delete('/',               requireAuth, validate(deleteAccountSchema), remove);
+accountRouter.get('/totp/status', requireAuth, totpController.status);
 accountRouter.get('/totp/setup', requireAuth, totpController.setup);
 accountRouter.post('/totp/enable', requireAuth, validate(totpTokenSchema), totpController.enable);
 accountRouter.delete('/totp/disable', requireAuth, validate(totpTokenSchema), totpController.disable);
-accountRouter.get('/totp/status', requireAuth, totpController.status);

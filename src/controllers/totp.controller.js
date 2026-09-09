@@ -3,6 +3,11 @@ import { sendSuccess } from '../utils/apiResponse.js';
 import * as totpService from '../services/totp.service.js';
 import { getAccount } from '../services/account.service.js';
 
+export const status = asyncHandler(async (req, res) => {
+  const result = await totpService.getTotpStatus(req.session.userId);
+  sendSuccess(res, result);
+});
+
 export const setup = asyncHandler(async (req, res) => {
   const user = await getAccount(req.session.userId);
   const result = await totpService.generateTotpSetup(user.id, user.email);

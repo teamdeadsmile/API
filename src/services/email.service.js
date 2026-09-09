@@ -1,12 +1,12 @@
 import { Resend } from 'resend';
 import { env } from '../config/env.js';
 
-const resend = new Resend(env.resendApiKey);
+const resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
 
 export async function sendTicketNotification(ticket) {
   const { id, email: userEmail, category, message, created_at } = ticket;
 
-  if (!env.resendApiKey) {
+  if (!resend) {
     console.warn('RESEND_API_KEY not set. Email notification skipped.');
     return;
   }

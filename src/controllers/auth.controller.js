@@ -1,10 +1,12 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess } from '../utils/apiResponse.js';
-import { registerUser, authenticateUser } from '../services/auth.service.js';
+import { registerUser, authenticateUser, completeTwoFactorLogin } from '../services/auth.service.js';
 import { getAccount } from '../services/account.service.js';
 import { env } from '../config/env.js';
 import { verifyTotpLogin } from '../services/totp.service.js';
 import { AppError } from '../utils/AppError.js';
+
+const TWO_FACTOR_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 
 function regenerateSession(req) {
   return new Promise((resolve, reject) => {
@@ -19,16 +21,24 @@ function destroySession(req) {
 }
 
 export const verifyTwoFactor = asyncHandler(async (req, res) => {
-  const { userId, token } = req.body;
-  const valid = await verifyTotpLogin(userId, token);
+  const { token } = req.body;
+  const pendingUserId = req.session?.pendingTwoFactorUserId;
+  const expiresAt = req.session?.pendingTwoFactorExpiresAt;
+
+  if (!pendingUserId || !expiresAt || Date.now() >= expiresAt) {
+    throw new AppError(401, 'TWO_FACTOR_CHALLENGE_EXPIRED', 'Your 2FA sign-in request has expired. Please sign in again.');
+  }
+
+  const valid = await verifyTotpLogin(pendingUserId, token);
   if (!valid) {
     throw new AppError(400, 'INVALID_TOTP', 'Invalid 2FA code.');
   }
-  const user = await getAccount(userId);
+
+  const account = await completeTwoFactorLogin(pendingUserId);
   await regenerateSession(req);
-  req.session.userId = userId;
-  req.session.role = user.role;
-  sendSuccess(res, user);
+  req.session.userId = account.id;
+  req.session.role = account.role;
+  sendSuccess(res, account);
 });
 
 export const register = asyncHandler(async (req, res) => {
@@ -41,9 +51,14 @@ export const register = asyncHandler(async (req, res) => {
 
 export const login = asyncHandler(async (req, res) => {
   const result = await authenticateUser(req.body);
+
   if (result.requiresTwoFactor) {
-    return sendSuccess(res, { requiresTwoFactor: true, userId: result.userId });
+    await regenerateSession(req);
+    req.session.pendingTwoFactorUserId = result.userId;
+    req.session.pendingTwoFactorExpiresAt = Date.now() + TWO_FACTOR_CHALLENGE_TTL_MS;
+    return sendSuccess(res, { requiresTwoFactor: true });
   }
+
   await regenerateSession(req);
   req.session.userId = result.id;
   req.session.role = result.role;

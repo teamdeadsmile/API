@@ -13,6 +13,14 @@ export const loginLimiter = rateLimit({
   handler:        rateLimitHandler,
 });
 
+export const twoFactorLimiter = rateLimit({
+  windowMs:       15 * 60 * 1_000,
+  limit:          10,
+  standardHeaders: true,
+  legacyHeaders:  false,
+  handler:        rateLimitHandler,
+});
+
 export const registerLimiter = rateLimit({
   windowMs:       60 * 60 * 1_000,
   limit:          10,

@@ -3,6 +3,7 @@ import { hashPassword, verifyPassword } from '../utils/password.js';
 import {
   createUser,
   findUserByEmail,
+  findUserById,
   findUserByUsername,
   updateLastLogin,
 } from '../repositories/users.repository.js';
@@ -39,12 +40,22 @@ export async function authenticateUser({ email, password }) {
   if (!valid) throw new AppError(401, 'INVALID_CREDENTIALS', INVALID_CREDENTIALS);
   const totp = await findTotpByUserId(user.id);
 
-    if (totp && totp.enabled) {
-      return { requiresTwoFactor: true, userId: user.id };
-    }
+  if (totp?.enabled) {
+    return { requiresTwoFactor: true, userId: user.id };
+  }
 
   await updateLastLogin(user.id);
   return sanitizeUser(user);
+}
+
+
+export async function completeTwoFactorLogin(userId) {
+  const user = await findUserById(userId);
+  if (!user) throw new AppError(404, 'USER_NOT_FOUND', 'Account not found.');
+
+  await updateLastLogin(userId);
+  const updatedUser = await findUserById(userId);
+  return sanitizeUser(updatedUser || user);
 }
 
 export function sanitizeUser(user) {
