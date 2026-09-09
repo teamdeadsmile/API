@@ -6,6 +6,7 @@ import {
   findUserByUsername,
   updateLastLogin,
 } from '../repositories/users.repository.js';
+import { findTotpByUserId } from '../repositories/totp.repository.js';
 
 const INVALID_CREDENTIALS = 'Invalid email or password.';
 
@@ -37,7 +38,7 @@ export async function authenticateUser({ email, password }) {
   const valid = await verifyPassword(user.password_hash, password);
   if (!valid) throw new AppError(401, 'INVALID_CREDENTIALS', INVALID_CREDENTIALS);
   const totp = await findTotpByUserId(user.id);
-  
+
     if (totp && totp.enabled) {
       return { requiresTwoFactor: true, userId: user.id };
     }
