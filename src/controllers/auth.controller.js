@@ -164,6 +164,14 @@ export const mobileLogin = asyncHandler(async (req, res) => {
   });
 });
 
+export const mobileRegister = asyncHandler(async (req, res) => {
+  const user = await registerUser(req.body);
+  await regenerateSession(req);
+  req.session.userId = user.id;
+  req.session.role = user.role;
+  return sendSuccess(res, user, 201);
+});
+
 export const me = asyncHandler(async (req, res) => {
   const user = await getAccount(req.session.userId);
 

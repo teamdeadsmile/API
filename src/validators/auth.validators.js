@@ -66,3 +66,24 @@ export const loginSchema = z.object({
     .trim()
     .min(1, 'reCAPTCHA verification is required.'),
 });
+
+export const mobileRegisterSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, 'Username must be at least 3 characters.')
+    .max(24, 'Username must be at most 24 characters.')
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      'Username may only contain letters, numbers, and underscores.'
+    ),
+
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('Enter a valid email address.')
+    .max(254),
+
+  password: passwordSchema,
+});

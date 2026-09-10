@@ -7,6 +7,7 @@ import {
   registerSchema,
   loginSchema,
   mobileLoginSchema,
+  mobileRegisterSchema,
 } from '../validators/auth.validators.js';
 
 import {
@@ -15,6 +16,7 @@ import {
   mobileLogin,
   logout,
   me,
+  mobileRegister,
   verifyTwoFactor,
 } from '../controllers/auth.controller.js';
 
@@ -30,4 +32,10 @@ authRouter.post(
   loginLimiter,
   validate(mobileLoginSchema),
   mobileLogin
+);
+authRouter.post(
+  '/mobile-register',
+  registerLimiter,
+  validate(mobileRegisterSchema),
+  mobileRegister
 );
