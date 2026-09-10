@@ -63,24 +63,7 @@ export const verifyTwoFactor = asyncHandler(async (req, res) => {
   if (!valid) {
     throw new AppError(400, "INVALID_TOTP", "Invalid 2FA code.");
   }
-
-  /*
-   * The TOTP code is valid.
-   *
-   * Complete the login using the user ID stored
-   * in the server-side session. We never trust a
-   * userId sent by the browser.
-   */
   const account = await completeTwoFactorLogin(pendingUserId);
-
-  /*
-   * Regenerate the session after authentication
-   * to prevent session fixation.
-   *
-   * This also removes:
-   * - pendingTwoFactorUserId
-   * - pendingTwoFactorExpiresAt
-   */
   await regenerateSession(req);
 
   req.session.userId = account.id;
@@ -91,11 +74,6 @@ export const verifyTwoFactor = asyncHandler(async (req, res) => {
 
 export const register = asyncHandler(async (req, res) => {
   const user = await registerUser(req.body);
-
-  /*
-   * Create a fresh authenticated session after
-   * successful registration.
-   */
   await regenerateSession(req);
 
   req.session.userId = user.id;
@@ -106,33 +84,13 @@ export const register = asyncHandler(async (req, res) => {
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password, recaptchaToken } = req.body;
-
-  /*
-   * Google reCAPTCHA is verified BEFORE checking
-   * the user's credentials.
-   *
-   * This prevents automated login attempts from
-   * reaching the authentication service.
-   */
   await verifyRecaptcha(recaptchaToken, req.ip);
 
   const result = await authenticateUser({
     email,
     password,
   });
-
-  /*
-   * Password is correct, but this account requires
-   * a second authentication factor.
-   *
-   * Do NOT authenticate the session yet.
-   */
   if (result.requiresTwoFactor) {
-    /*
-     * Destroy the previous session identity and
-     * create a new temporary session containing
-     * only the pending 2FA challenge.
-     */
     await regenerateSession(req);
 
     req.session.pendingTwoFactorUserId = result.userId;
@@ -144,13 +102,6 @@ export const login = asyncHandler(async (req, res) => {
       requiresTwoFactor: true,
     });
   }
-
-  /*
-   * No 2FA is required.
-   *
-   * Regenerate the session before establishing the
-   * authenticated identity to prevent session fixation.
-   */
   await regenerateSession(req);
 
   req.session.userId = result.id;
@@ -171,6 +122,45 @@ export const logout = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, {
     loggedOut: true,
+  });
+});
+
+async function performLogin(req, res, { requireRecaptcha = false } = {}) {
+  const { email, password, recaptchaToken } = req.body;
+
+  if (requireRecaptcha) {
+    await verifyRecaptcha(recaptchaToken, req.ip);
+  }
+
+  const result = await authenticateUser({
+    email,
+    password,
+  });
+
+  if (result.requiresTwoFactor) {
+    await regenerateSession(req);
+
+    req.session.pendingTwoFactorUserId = result.userId;
+
+    req.session.pendingTwoFactorExpiresAt =
+      Date.now() + TWO_FACTOR_CHALLENGE_TTL_MS;
+
+    return sendSuccess(res, {
+      requiresTwoFactor: true,
+    });
+  }
+
+  await regenerateSession(req);
+
+  req.session.userId = result.id;
+  req.session.role = result.role;
+
+  return sendSuccess(res, result);
+}
+
+export const mobileLogin = asyncHandler(async (req, res) => {
+  return performLogin(req, res, {
+    requireRecaptcha: false,
   });
 });
 

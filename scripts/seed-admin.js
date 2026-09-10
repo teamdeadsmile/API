@@ -22,8 +22,6 @@ async function main() {
 
   const passwordHash = await hashPassword(password);
   const admin = await upsertAdminUser({ username, email, passwordHash });
-
-  console.log(`Admin ready: ${admin.username} <${admin.email}> [role=${admin.role}]`);
 }
 
 main()
