@@ -22,8 +22,8 @@ const avatarUrl = z
 
 export const updateAccountSchema = z
   .object({
-    username:   z.string().trim().min(3).max(24).regex(/^[a-zA-Z0-9_]+$/),
-    email:      z.string().trim().toLowerCase().email().max(254),
+    username:   z.string().trim().min(3).max(24).regex(/^[a-zA-Z0-9_]+$/).optional(),
+    email:      z.string().trim().toLowerCase().email().max(254).optional(),
     bio:        z.string().trim().max(500).optional(),
     websiteUrl: httpsUrl,
     location:   z.string().trim().max(120).optional(),

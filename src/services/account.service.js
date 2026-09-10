@@ -33,10 +33,10 @@ export async function updateAccount(userId, payload) {
   const updated = await updateProfile(userId, {
     username:   payload.username   || current.username,
     email:      payload.email      || current.email,
-    bio:        payload.bio,
-    websiteUrl: payload.websiteUrl,
-    location:   payload.location,
-    avatarUrl:  payload.avatarUrl,
+    bio:        payload.bio        ?? current.bio,
+    websiteUrl: payload.websiteUrl ?? current.website_url,
+    location:   payload.location   ?? current.location,
+    avatarUrl:  payload.avatarUrl  ?? current.avatar_url,
   });
 
   return sanitizeUser(updated);
