@@ -28,5 +28,6 @@ export const env = {
   resendApiKey: process.env.RESEND_API_KEY,
   notifyEmail: process.env.NOTIFY_EMAIL,
   sessionSecret,
+  recaptchaSecretKey: process.env.RECAPTCHA_SECRET_KEY,
   cookieSameSite,
 };

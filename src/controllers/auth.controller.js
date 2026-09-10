@@ -1,82 +1,181 @@
-import { asyncHandler } from '../utils/asyncHandler.js';
-import { sendSuccess } from '../utils/apiResponse.js';
-import { registerUser, authenticateUser, completeTwoFactorLogin } from '../services/auth.service.js';
-import { getAccount } from '../services/account.service.js';
-import { env } from '../config/env.js';
-import { verifyTotpLogin } from '../services/totp.service.js';
-import { AppError } from '../utils/AppError.js';
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { sendSuccess } from "../utils/apiResponse.js";
+import {
+  registerUser,
+  authenticateUser,
+  completeTwoFactorLogin,
+} from "../services/auth.service.js";
+
+import { getAccount } from "../services/account.service.js";
+
+import { env } from "../config/env.js";
+
+import { verifyTotpLogin } from "../services/totp.service.js";
+
+import { verifyRecaptcha } from "../services/recaptcha.service.js";
+
+import { AppError } from "../utils/AppError.js";
 
 const TWO_FACTOR_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 
 function regenerateSession(req) {
   return new Promise((resolve, reject) => {
-    req.session.regenerate((err) => (err ? reject(err) : resolve()));
+    req.session.regenerate((err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve();
+    });
   });
 }
 
 function destroySession(req) {
   return new Promise((resolve, reject) => {
-    req.session.destroy((err) => (err ? reject(err) : resolve()));
+    req.session.destroy((err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve();
+    });
   });
 }
 
 export const verifyTwoFactor = asyncHandler(async (req, res) => {
   const { token } = req.body;
+
   const pendingUserId = req.session?.pendingTwoFactorUserId;
   const expiresAt = req.session?.pendingTwoFactorExpiresAt;
 
   if (!pendingUserId || !expiresAt || Date.now() >= expiresAt) {
-    throw new AppError(401, 'TWO_FACTOR_CHALLENGE_EXPIRED', 'Your 2FA sign-in request has expired. Please sign in again.');
+    throw new AppError(
+      401,
+      "TWO_FACTOR_CHALLENGE_EXPIRED",
+      "Your 2FA sign-in request has expired. Please sign in again.",
+    );
   }
 
   const valid = await verifyTotpLogin(pendingUserId, token);
+
   if (!valid) {
-    throw new AppError(400, 'INVALID_TOTP', 'Invalid 2FA code.');
+    throw new AppError(400, "INVALID_TOTP", "Invalid 2FA code.");
   }
 
+  /*
+   * The TOTP code is valid.
+   *
+   * Complete the login using the user ID stored
+   * in the server-side session. We never trust a
+   * userId sent by the browser.
+   */
   const account = await completeTwoFactorLogin(pendingUserId);
+
+  /*
+   * Regenerate the session after authentication
+   * to prevent session fixation.
+   *
+   * This also removes:
+   * - pendingTwoFactorUserId
+   * - pendingTwoFactorExpiresAt
+   */
   await regenerateSession(req);
+
   req.session.userId = account.id;
   req.session.role = account.role;
-  sendSuccess(res, account);
+
+  return sendSuccess(res, account);
 });
 
 export const register = asyncHandler(async (req, res) => {
   const user = await registerUser(req.body);
+
+  /*
+   * Create a fresh authenticated session after
+   * successful registration.
+   */
   await regenerateSession(req);
+
   req.session.userId = user.id;
   req.session.role = user.role;
-  sendSuccess(res, user, 201);
+
+  return sendSuccess(res, user, 201);
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const result = await authenticateUser(req.body);
+  const { email, password, recaptchaToken } = req.body;
 
+  /*
+   * Google reCAPTCHA is verified BEFORE checking
+   * the user's credentials.
+   *
+   * This prevents automated login attempts from
+   * reaching the authentication service.
+   */
+  await verifyRecaptcha(recaptchaToken, req.ip);
+
+  const result = await authenticateUser({
+    email,
+    password,
+  });
+
+  /*
+   * Password is correct, but this account requires
+   * a second authentication factor.
+   *
+   * Do NOT authenticate the session yet.
+   */
   if (result.requiresTwoFactor) {
+    /*
+     * Destroy the previous session identity and
+     * create a new temporary session containing
+     * only the pending 2FA challenge.
+     */
     await regenerateSession(req);
+
     req.session.pendingTwoFactorUserId = result.userId;
-    req.session.pendingTwoFactorExpiresAt = Date.now() + TWO_FACTOR_CHALLENGE_TTL_MS;
-    return sendSuccess(res, { requiresTwoFactor: true });
+
+    req.session.pendingTwoFactorExpiresAt =
+      Date.now() + TWO_FACTOR_CHALLENGE_TTL_MS;
+
+    return sendSuccess(res, {
+      requiresTwoFactor: true,
+    });
   }
 
+  /*
+   * No 2FA is required.
+   *
+   * Regenerate the session before establishing the
+   * authenticated identity to prevent session fixation.
+   */
   await regenerateSession(req);
+
   req.session.userId = result.id;
   req.session.role = result.role;
-  sendSuccess(res, result);
+
+  return sendSuccess(res, result);
 });
 
 export const logout = asyncHandler(async (req, res) => {
   await destroySession(req);
-  res.clearCookie('deadsmile.sid', {
+
+  res.clearCookie("deadsmile.sid", {
     httpOnly: true,
     secure: env.isProduction,
     sameSite: env.cookieSameSite,
-    path: '/',
+    path: "/",
   });
-  sendSuccess(res, { loggedOut: true });
+
+  return sendSuccess(res, {
+    loggedOut: true,
+  });
 });
 
 export const me = asyncHandler(async (req, res) => {
   const user = await getAccount(req.session.userId);
-  sendSuccess(res, user);
+
+  return sendSuccess(res, user);
 });
