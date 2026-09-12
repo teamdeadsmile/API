@@ -201,7 +201,11 @@ export async function findPendingOrderByGame(userId, gameId) {
     return rows[0] || null;
 }
 
-export async function findPendingOrderForPayment(userId, orderId) {
+// FIX: a assinatura recebe (orderId, userId) para alinhar com a query,
+// que filtra WHERE o.id = $1 AND o.user_id = $2.
+// O bug anterior era a assinatura (userId, orderId) com params [orderId, userId],
+// fazendo $1 = userId e $2 = orderId — ao contrário do esperado pela query.
+export async function findPendingOrderForPayment(orderId, userId) {
     const { rows } = await pool.query(
         `
         SELECT

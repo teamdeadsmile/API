@@ -39,6 +39,37 @@ export async function createXsollaPaymentToken({
     returnUrl,
     currency,
 }) {
+    // FIX: valida os campos obrigatórios antes de chamar a Xsolla.
+    // userId e email nulos/vazios causam o erro 9003 ([0401-9003]: Provide
+    // required for purchase user data), que ocorria porque findPendingOrderForPayment
+    // recebia os parâmetros invertidos e o JOIN com users retornava null.
+    const userIdStr = userId != null ? String(userId).trim() : '';
+    const emailStr  = email  != null ? String(email).trim()  : '';
+
+    if (!userIdStr) {
+        throw new AppError(
+            500,
+            'XSOLLA_MISSING_USER_ID',
+            'Cannot initialize payment: user ID is missing.'
+        );
+    }
+
+    if (!emailStr) {
+        throw new AppError(
+            500,
+            'XSOLLA_MISSING_EMAIL',
+            'Cannot initialize payment: user email is missing.'
+        );
+    }
+
+    if (!sku) {
+        throw new AppError(
+            500,
+            'XSOLLA_MISSING_SKU',
+            'Cannot initialize payment: game SKU is missing.'
+        );
+    }
+
     const config = getXsollaConfig();
 
     const credentials = Buffer.from(
@@ -50,10 +81,10 @@ export async function createXsollaPaymentToken({
 
         user: {
             id: {
-                value: String(userId),
+                value: userIdStr,
             },
             email: {
-                value: email,
+                value: emailStr,
             },
             country: {
                 value: 'BR',
@@ -73,12 +104,9 @@ export async function createXsollaPaymentToken({
         settings: {
             external_id: String(orderId),
             currency,
-    ...(returnUrl &&
-    returnUrl.startsWith('https://')
-        ? {
-              return_url: returnUrl,
-          }
-        : {}),
+            ...(returnUrl && returnUrl.startsWith('https://')
+                ? { return_url: returnUrl }
+                : {}),
         },
 
         custom_parameters: {
@@ -111,9 +139,7 @@ export async function createXsollaPaymentToken({
     let data;
 
     try {
-        data = responseText
-            ? JSON.parse(responseText)
-            : null;
+        data = responseText ? JSON.parse(responseText) : null;
     } catch {
         data = null;
     }

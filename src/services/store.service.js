@@ -122,10 +122,11 @@ export async function createOrder(userId, slug) {
 }
 
 export async function preparePayment(userId, orderId, ipAddress) {
-    const order = await findPendingOrderForPayment(
-        userId,
-        orderId
-    );
+    // FIX: a assinatura de findPendingOrderForPayment foi corrigida para
+    // (orderId, userId), alinhando com a query WHERE o.id = $1 AND o.user_id = $2.
+    // Antes estava (userId, orderId), invertendo os parâmetros da query —
+    // o JOIN com users retornava user_email = null, causando o erro 9003 na Xsolla.
+    const order = await findPendingOrderForPayment(orderId, userId);
 
     if (!order) {
         throw new AppError(
@@ -161,6 +162,17 @@ export async function preparePayment(userId, orderId, ipAddress) {
         );
     }
 
+    // Guarda extra: email é obrigatório pela Xsolla (erro 9003 se ausente).
+    // Nunca deveria ser null aqui após o fix do param order, mas falha rápido
+    // com mensagem clara se o JOIN com users não retornar email por algum motivo.
+    if (!order.user_email) {
+        throw new AppError(
+            500,
+            'USER_EMAIL_MISSING',
+            'Unable to retrieve user data for payment.'
+        );
+    }
+
     console.log('Xsolla payment user data:', {
         orderId: order.id,
         userId: order.user_id,
@@ -178,6 +190,7 @@ export async function preparePayment(userId, orderId, ipAddress) {
         returnUrl: `${process.env.FRONTEND_URL}/store/${order.slug}`,
         currency: order.currency,
     });
+
     return {
         orderId: order.id,
         status: order.status,
@@ -194,6 +207,6 @@ export async function preparePayment(userId, orderId, ipAddress) {
             provider: 'xsolla',
             token: xsollaPayment.token,
             checkoutUrl: xsollaPayment.checkoutUrl,
-        }
+        },
     };
 }
