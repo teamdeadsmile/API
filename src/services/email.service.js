@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 import { env } from '../config/env.js';
-
+import { sendTransactionalEmail } from './brevo.service.js';
 const resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
 
 export async function sendTicketNotification(ticket) {
@@ -55,19 +55,9 @@ To reply, simply reply to this email – it will go directly to the user.
   }
 }
 export async function sendPasswordResetEmail({ to, username, resetUrl }) {
-  if (!resend) {
-    console.warn('RESEND_API_KEY not set. Password reset email skipped.');
-    return;
-  }
-
   const safeName = username ? ` ${username}` : '';
 
-  try {
-    const { error } = await resend.emails.send({
-      from: 'DEADSMILE <onboarding@resend.dev>',
-      to,
-      subject: 'Reset your DEADSMILE password',
-      text: `
+  const text = `
 Hi${safeName},
 
 We received a request to reset your DEADSMILE password.
@@ -78,8 +68,9 @@ ${resetUrl}
 If you didn't request this, you can safely ignore this email.
 
 — DEADSMILE Games
-      `.trim(),
-      html: `
+  `.trim();
+
+  const html = `
 <div style="font-family:system-ui,sans-serif;background:#0b0b0b;color:#eaeaea;padding:40px;border-radius:12px;max-width:520px;margin:auto;">
   <h2 style="margin:0 0 16px;font-size:20px;">Reset your password</h2>
   <p style="color:#aaa;line-height:1.6;margin:0 0 24px;">
@@ -93,10 +84,16 @@ If you didn't request this, you can safely ignore this email.
     This link expires in 1 hour. If you didn't request this, ignore this email.
   </p>
 </div>
-      `,
+  `.trim();
+
+  try {
+    await sendTransactionalEmail({
+      to,
+      subject: 'Reset your DEADSMILE password',
+      text,
+      html,
     });
-    if (error) console.error('Error sending password reset email:', error);
   } catch (err) {
-    console.error('Failed to send password reset email:', err.message);
+    console.error('Password reset email failed:', err.message);
   }
 }

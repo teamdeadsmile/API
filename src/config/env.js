@@ -30,4 +30,7 @@ export const env = {
   sessionSecret,
   recaptchaSecretKey: process.env.RECAPTCHA_SECRET_KEY,
   cookieSameSite,
+  brevoApiKey: process.env.BREVO_API_KEY,
+  brevoSenderEmail: process.env.BREVO_SENDER_EMAIL,
+  brevoSenderName: process.env.BREVO_SENDER_NAME || 'DEADSMILE',
 };
