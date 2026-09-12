@@ -19,8 +19,22 @@ export async function publishVideo(payload) {
 
 export async function publishGame(payload) {
   const existing = await findGameBySlug(payload.slug);
-  if (existing) throw new AppError(409, 'GAME_SLUG_TAKEN', 'That game slug is already in use.');
-  return createGame(payload);
+
+  if (existing) {
+    throw new AppError(
+      409,
+      'GAME_SLUG_TAKEN',
+      'That game slug is already in use.'
+    );
+  }
+  const purchaseUrl = payload.purchaseEnabled
+    ? `/store/${payload.slug}`
+    : null;
+
+  return createGame({
+    ...payload,
+    purchaseUrl,
+  });
 }
 
 async function remove(fn, id, label) {
