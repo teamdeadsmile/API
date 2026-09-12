@@ -21,7 +21,6 @@ function cookieOptions() {
     sameSite: env.isProduction ? 'none' : 'lax',
     maxAge: CSRF_MAX_AGE,
     path: '/',
-    partitioned: env.isProduction,
   };
 }
 

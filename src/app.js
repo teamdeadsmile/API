@@ -65,7 +65,7 @@ const SESSION_COOKIE_OPTIONS = {
     secure: env.isProduction,
     sameSite: env.isProduction ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7,
-    partitioned: env.isProduction,
+    path: "/",
 };
 
 export function createApp() {
@@ -138,18 +138,18 @@ export function createApp() {
     });
 
     const allowedOrigins = [
-      env.frontendUrl,
-      'http://localhost:5173',
-      'http://localhost:8081',
-    ];
+        env.frontendUrl,
+        'http://localhost:5173',
+        'http://localhost:8081',
+    ].filter(Boolean);
 
     app.use(
-      cors({
-        origin: allowedOrigins,
-        credentials: true,
-        methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "X-CSRF-Token"],
-      })
+        cors({
+            origin: allowedOrigins,
+            credentials: true,
+            methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
+        })
     );
     app.use(hpp());
 
