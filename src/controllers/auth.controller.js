@@ -19,8 +19,6 @@ import { env } from "../config/env.js";
 
 import { verifyTotpLogin } from "../services/totp.service.js";
 
-import { verifyRecaptcha } from "../services/recaptcha.service.js";
-
 import { AppError } from "../utils/AppError.js";
 
 const TWO_FACTOR_CHALLENGE_TTL_MS = 5 * 60 * 1000;
