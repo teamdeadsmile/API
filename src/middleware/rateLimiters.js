@@ -44,3 +44,11 @@ export const publicWriteLimiter = rateLimit({
   legacyHeaders:  false,
   handler:        rateLimitHandler,
 });
+
+export const forgotPasswordLimiter = rateLimit({
+  windowMs:       15 * 60 * 1_000,
+  limit:          5,
+  standardHeaders: true,
+  legacyHeaders:  false,
+  handler:        rateLimitHandler,
+});

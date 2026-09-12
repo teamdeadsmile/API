@@ -54,3 +54,49 @@ To reply, simply reply to this email – it will go directly to the user.
     console.error('Failed to send email:', err.message);
   }
 }
+export async function sendPasswordResetEmail({ to, username, resetUrl }) {
+  if (!resend) {
+    console.warn('RESEND_API_KEY not set. Password reset email skipped.');
+    return;
+  }
+
+  const safeName = username ? ` ${username}` : '';
+
+  try {
+    const { error } = await resend.emails.send({
+      from: 'DEADSMILE <onboarding@resend.dev>',
+      to,
+      subject: 'Reset your DEADSMILE password',
+      text: `
+Hi${safeName},
+
+We received a request to reset your DEADSMILE password.
+
+Click the link below to choose a new password (valid for 1 hour):
+${resetUrl}
+
+If you didn't request this, you can safely ignore this email.
+
+— DEADSMILE Games
+      `.trim(),
+      html: `
+<div style="font-family:system-ui,sans-serif;background:#0b0b0b;color:#eaeaea;padding:40px;border-radius:12px;max-width:520px;margin:auto;">
+  <h2 style="margin:0 0 16px;font-size:20px;">Reset your password</h2>
+  <p style="color:#aaa;line-height:1.6;margin:0 0 24px;">
+    Hi${safeName}, we received a request to reset your DEADSMILE password.
+  </p>
+  <a href="${resetUrl}"
+     style="display:inline-block;background:#fff;color:#0b0b0b;padding:12px 22px;border-radius:999px;font-weight:700;text-decoration:none;">
+    Choose a new password
+  </a>
+  <p style="color:#666;font-size:12px;line-height:1.6;margin:24px 0 0;">
+    This link expires in 1 hour. If you didn't request this, ignore this email.
+  </p>
+</div>
+      `,
+    });
+    if (error) console.error('Error sending password reset email:', error);
+  } catch (err) {
+    console.error('Failed to send password reset email:', err.message);
+  }
+}

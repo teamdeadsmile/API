@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { validate } from '../middleware/validate.js';
-import { loginLimiter, registerLimiter, twoFactorLimiter } from '../middleware/rateLimiters.js';
+import { loginLimiter, registerLimiter, twoFactorLimiter, forgotPasswordLimiter } from '../middleware/rateLimiters.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { totpTokenSchema } from '../validators/totp.validators.js';
 import {
@@ -11,6 +11,11 @@ import {
 } from '../validators/auth.validators.js';
 
 import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '../validators/password-reset.validators.js';
+
+import {
   register,
   login,
   mobileLogin,
@@ -18,6 +23,8 @@ import {
   me,
   mobileRegister,
   verifyTwoFactor,
+  forgotPassword,
+  resetPasswordHandler,
 } from '../controllers/auth.controller.js';
 
 export const authRouter = Router();
@@ -38,4 +45,16 @@ authRouter.post(
   registerLimiter,
   validate(mobileRegisterSchema),
   mobileRegister
+);
+authRouter.post(
+  '/forgot-password',
+  forgotPasswordLimiter,
+  validate(forgotPasswordSchema),
+  forgotPassword,
+);
+
+authRouter.post(
+  '/reset-password',
+  validate(resetPasswordSchema),
+  resetPasswordHandler,
 );

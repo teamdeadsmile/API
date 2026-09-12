@@ -6,6 +6,13 @@ import {
   completeTwoFactorLogin,
 } from "../services/auth.service.js";
 
+import {
+  requestPasswordReset,
+  resetPassword,
+} from "../services/password-reset.service.js";
+
+import { verifyRecaptcha } from "../services/recaptcha.service.js";
+
 import { getAccount } from "../services/account.service.js";
 
 import { env } from "../config/env.js";
@@ -176,4 +183,17 @@ export const me = asyncHandler(async (req, res) => {
   const user = await getAccount(req.session.userId);
 
   return sendSuccess(res, user);
+});
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email, recaptchaToken } = req.body;
+  await verifyRecaptcha(recaptchaToken, req.ip);
+  await requestPasswordReset(email);
+  return sendSuccess(res, { sent: true });
+});
+
+export const resetPasswordHandler = asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+  const result = await resetPassword({ token, password });
+  return sendSuccess(res, result);
 });
