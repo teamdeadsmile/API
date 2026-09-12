@@ -16,7 +16,7 @@ export async function generateTotpSetup(userId, email) {
   }
 
   const secret = speakeasy.generateSecret({
-    name: `DEADSMILE:${email}`,
+    name: `Deadsmile Games:${email}`,
     length: 20,
   });
 

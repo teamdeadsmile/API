@@ -32,5 +32,5 @@ export const env = {
   cookieSameSite,
   brevoApiKey: process.env.BREVO_API_KEY,
   brevoSenderEmail: process.env.BREVO_SENDER_EMAIL,
-  brevoSenderName: process.env.BREVO_SENDER_NAME || 'DEADSMILE',
+  brevoSenderName: process.env.BREVO_SENDER_NAME || 'Deadsmile Games',
 };

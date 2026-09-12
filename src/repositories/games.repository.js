@@ -4,7 +4,7 @@ const GAME_SUMMARY_SELECT = `
   SELECT
     g.id, g.title, g.slug, g.short_description,
     g.status, g.release_date, g.hero_image, g.cover_image,
-    g.trailer_url, g.featured, g.purchase_url, g.download_url,
+    g.trailer_url, g.featured, g.purchase_url, g.download_url, g.price_cents, g.currency,
     COALESCE(genre_agg.genres,    '{}') AS genres,
     COALESCE(platform_agg.platforms, '{}') AS platforms
   FROM games g

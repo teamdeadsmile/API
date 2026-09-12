@@ -18,7 +18,7 @@ export async function sendTicketNotification(ticket) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'DEADSMILE Support <onboarding@resend.dev>',
+      from: 'Deadsmile Games Support <onboarding@resend.dev>',
       to: env.notifyEmail,
       replyTo: userEmail,
       subject: `[Support Ticket #${id}] ${category}`,
@@ -66,14 +66,14 @@ export async function sendPasswordResetEmail({
   const text = `
 Hi${safeName},
 
-We received a request to reset your DEADSMILE password.
+We received a request to reset your Deadsmile Games Account password.
 
 Click the link below to choose a new password (valid for 1 hour):
 ${resetUrl}
 
 If you didn't request this, you can safely ignore this email.
 
-— DEADSMILE Games
+— Deadsmile Games
   `.trim();
 
   const html = `
@@ -83,7 +83,7 @@ If you didn't request this, you can safely ignore this email.
   </h2>
 
   <p style="color:#aaa;line-height:1.6;margin:0 0 24px;">
-    Hi${safeName}, we received a request to reset your DEADSMILE password.
+    Hi${safeName}, we received a request to reset your Deadsmile Games Account password.
   </p>
 
   <a
@@ -101,7 +101,7 @@ If you didn't request this, you can safely ignore this email.
 
   return sendTransactionalEmail({
     to,
-    subject: 'Reset your DEADSMILE password',
+    subject: 'Reset your Deadsmile Games Account password',
     text,
     html,
   });

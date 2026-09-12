@@ -17,6 +17,8 @@ function toClientGame(row) {
     platforms:        row.platforms || [],
     purchaseUrl:      row.purchase_url || null,
     downloadUrl:      row.download_url || null,
+    priceCents: row.price_cents ?? null,
+    currency: row.currency || null,
   };
 }
 

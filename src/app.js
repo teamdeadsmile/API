@@ -18,7 +18,8 @@ import { authRouter } from "./routes/auth.routes.js";
 import { gamesRouter } from "./routes/games.routes.js";
 import { searchRouter } from "./routes/search.routes.js";
 import { accountRouter } from "./routes/account.routes.js";
-import { newsletterRouter } from "./routes/newsletter.routes.js";
+import { newsletterRouter } from "./routes/newsletter.routes.js"
+import { storeRouter } from './routes/store.routes.js';;
 import { supportRouter } from "./routes/support.routes.js";
 import { wishlistRouter } from './routes/wishlist.routes.js';
 import {
@@ -200,6 +201,7 @@ export function createApp() {
     app.use("/api/downloads", downloadsRouter);
     app.use("/api/products", productsRouter);
     app.use("/api/wishlist", wishlistRouter);
+    app.use("/api/store", storeRouter);
 
     app.use("/api", notFoundHandler);
     app.use(errorHandler);
