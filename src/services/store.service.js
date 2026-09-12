@@ -161,6 +161,14 @@ export async function preparePayment(userId, orderId, ipAddress) {
         );
     }
 
+    console.log('Xsolla payment user data:', {
+        orderId: order.id,
+        userId: order.user_id,
+        email: order.user_email,
+        sku: order.slug,
+        currency: order.currency,
+    });
+
     const xsollaPayment = await createXsollaPaymentToken({
         userId: order.user_id,
         email: order.user_email,
