@@ -55,6 +55,10 @@ export async function createXsollaPaymentToken({
             email: {
                 value: email,
             },
+            country: {
+                value: 'BR',
+                allow_modify: false,
+            },
         },
 
         purchase: {
@@ -71,8 +75,8 @@ export async function createXsollaPaymentToken({
             currency,
             ...(returnUrl
                 ? {
-                      return_url: returnUrl,
-                  }
+                    return_url: returnUrl,
+                }
                 : {}),
         },
 
