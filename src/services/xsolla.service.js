@@ -73,11 +73,12 @@ export async function createXsollaPaymentToken({
         settings: {
             external_id: String(orderId),
             currency,
-            ...(returnUrl
-                ? {
-                    return_url: returnUrl,
-                }
-                : {}),
+    ...(returnUrl &&
+    returnUrl.startsWith('https://')
+        ? {
+              return_url: returnUrl,
+          }
+        : {}),
         },
 
         custom_parameters: {

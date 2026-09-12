@@ -162,13 +162,13 @@ export async function preparePayment(userId, orderId, ipAddress) {
     }
 
     const xsollaPayment = await createXsollaPaymentToken({
-        userId,
+        userId: order.user_id,
         email: order.user_email,
         ipAddress,
         orderId: order.id,
         sku: order.slug,
+        returnUrl: `${process.env.FRONTEND_URL}/store/${order.slug}`,
         currency: order.currency,
-        returnUrl: '[SUA_URL_DE_RETORNO_DO_CHECKOUT]',
     });
     return {
         orderId: order.id,
