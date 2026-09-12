@@ -94,6 +94,9 @@ If you didn't request this, you can safely ignore this email.
       html,
     });
   } catch (err) {
-    console.error('Password reset email failed:', err.message);
+    console.error('[email] ✗ password reset failed:');
+    console.error('  status:', err.statusCode);
+    console.error('  body:', JSON.stringify(err.body || err.response?.body, null, 2));
+    console.error('  message:', err.message);
   }
 }

@@ -28,10 +28,10 @@ export async function sendTransactionalEmail({ to, subject, text, html }) {
 
     return { sent: true, messageId: result?.messageId };
   } catch (err) {
-    console.error(
-      `Brevo send failed [${err.statusCode || 'unknown'}]:`,
-      err.message,
-    );
+    console.error('[brevo] ✗ send failed:');
+    console.error('  status:', err.statusCode);
+    console.error('  body:', JSON.stringify(err.body || err.response?.body, null, 2));
+    console.error('  message:', err.message);
     throw err;
   }
 }

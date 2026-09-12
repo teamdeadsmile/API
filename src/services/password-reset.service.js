@@ -28,14 +28,20 @@ export async function requestPasswordReset(email) {
   const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
   await createResetToken({ userId: user.id, tokenHash, expiresAt });
   const resetUrl = `${env.frontendUrl}/reset-password?token=${rawToken}`;
-  sendPasswordResetEmail({
-    to: user.email,
-    username: user.username,
-    resetUrl,
-  }).catch((err) => {
-    console.error('Failed to send password reset email:', err.message);
-  });
+console.log('[password-reset] → enviando para:', user.email);
 
+sendPasswordResetEmail({
+  to: user.email,
+  username: user.username,
+  resetUrl,
+}).then((result) => {
+  console.log('[password-reset] ✓ resultado:', result);
+}).catch((err) => {
+  console.error('[password-reset] ✗ FALHOU:');
+  console.error('  status:', err.statusCode);
+  console.error('  body:', JSON.stringify(err.body || err.response?.body, null, 2));
+  console.error('  message:', err.message);
+});
   return { sent: true };
 }
 
