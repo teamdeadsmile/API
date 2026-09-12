@@ -42,3 +42,18 @@ storeRouter.get(
         sendSuccess(res, result);
     })
 );
+
+storeRouter.post(
+    '/orders',
+    requireAuth,
+    asyncHandler(async (req, res) => {
+        const { slug } = req.body;
+
+        const result = await storeService.createOrder(
+            req.session.userId,
+            slug
+        );
+
+        sendSuccess(res, result, 201);
+    })
+);

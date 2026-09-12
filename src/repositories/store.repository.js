@@ -107,3 +107,96 @@ export async function listUserEntitlements(userId) {
 
     return rows;
 }
+
+export async function createPendingOrder({
+    userId,
+    gameId,
+    title,
+    priceCents,
+    currency,
+}) {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const orderResult = await client.query(
+            `
+            INSERT INTO orders (
+                user_id,
+                status,
+                currency,
+                subtotal_cents,
+                total_cents
+            )
+            VALUES ($1, 'pending', $2, $3, $3)
+            RETURNING
+                id,
+                user_id,
+                status,
+                currency,
+                subtotal_cents,
+                total_cents,
+                created_at
+            `,
+            [userId, currency, priceCents]
+        );
+
+        const order = orderResult.rows[0];
+
+        await client.query(
+            `
+            INSERT INTO order_items (
+                order_id,
+                game_id,
+                title,
+                unit_price_cents,
+                currency
+            )
+            VALUES ($1, $2, $3, $4, $5)
+            `,
+            [
+                order.id,
+                gameId,
+                title,
+                priceCents,
+                currency,
+            ]
+        );
+
+        await client.query('COMMIT');
+
+        return order;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+export async function findPendingOrderByGame(userId, gameId) {
+    const { rows } = await pool.query(
+        `
+        SELECT
+            o.id,
+            o.user_id,
+            o.status,
+            o.currency,
+            o.subtotal_cents,
+            o.total_cents,
+            o.created_at
+        FROM orders o
+        JOIN order_items oi
+          ON oi.order_id = o.id
+        WHERE o.user_id = $1
+          AND oi.game_id = $2
+          AND o.status = 'pending'
+        ORDER BY o.created_at DESC
+        LIMIT 1
+        `,
+        [userId, gameId]
+    );
+
+    return rows[0] || null;
+}
