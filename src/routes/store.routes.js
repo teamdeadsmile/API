@@ -57,3 +57,17 @@ storeRouter.post(
         sendSuccess(res, result, 201);
     })
 );
+
+storeRouter.post(
+    '/orders/:orderId/payment',
+    requireAuth,
+    asyncHandler(async (req, res) => {
+        const result = await storeService.preparePayment(
+            req.session.userId,
+            req.params.orderId,
+            req.ip
+        );
+
+        sendSuccess(res, result);
+    })
+);

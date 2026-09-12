@@ -2,10 +2,14 @@ import {
     findPurchasableGameBySlug,
     findActiveEntitlement,
     findPendingOrderByGame,
+    findPendingOrderForPayment,
     listUserPurchases,
     listUserEntitlements,
     createPendingOrder,
 } from '../repositories/store.repository.js';
+
+import { createXsollaPaymentToken } from './xsolla.service.js';
+
 import { AppError } from '../utils/AppError.js';
 
 export async function getCheckoutGame(slug) {
@@ -114,5 +118,74 @@ export async function createOrder(userId, slug) {
             priceCents: game.price_cents,
             currency: game.currency,
         },
+    };
+}
+
+export async function preparePayment(userId, orderId, ipAddress) {
+    const order = await findPendingOrderForPayment(
+        userId,
+        orderId
+    );
+
+    if (!order) {
+        throw new AppError(
+            404,
+            'ORDER_NOT_FOUND',
+            'That order is not available.'
+        );
+    }
+
+    if (
+        !order.purchase_url ||
+        order.price_cents == null ||
+        order.price_cents < 0 ||
+        !order.game_currency
+    ) {
+        throw new AppError(
+            409,
+            'GAME_NOT_FOR_SALE',
+            'That game is no longer available for purchase.'
+        );
+    }
+
+    if (
+        order.total_cents !== order.price_cents ||
+        order.currency !== order.game_currency ||
+        order.unit_price_cents !== order.price_cents ||
+        order.item_currency !== order.game_currency
+    ) {
+        throw new AppError(
+            409,
+            'ORDER_PRICE_CHANGED',
+            'The order price is no longer valid.'
+        );
+    }
+
+    const xsollaPayment = await createXsollaPaymentToken({
+        userId,
+        email: order.user_email,
+        ipAddress,
+        orderId: order.id,
+        sku: order.slug,
+        currency: order.currency,
+        returnUrl: '[SUA_URL_DE_RETORNO_DO_CHECKOUT]',
+    });
+    return {
+        orderId: order.id,
+        status: order.status,
+        amountCents: order.total_cents,
+        currency: order.currency,
+
+        game: {
+            id: order.game_id,
+            title: order.title,
+            slug: order.slug,
+        },
+
+        payment: {
+            provider: 'xsolla',
+            token: xsollaPayment.token,
+            checkoutUrl: xsollaPayment.checkoutUrl,
+        }
     };
 }

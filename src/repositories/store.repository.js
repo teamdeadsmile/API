@@ -200,3 +200,48 @@ export async function findPendingOrderByGame(userId, gameId) {
 
     return rows[0] || null;
 }
+
+export async function findPendingOrderForPayment(userId, orderId) {
+    const { rows } = await pool.query(
+        `
+        SELECT
+            o.id,
+            o.user_id,
+            o.status,
+            o.currency,
+            o.subtotal_cents,
+            o.total_cents,
+
+            oi.game_id,
+            oi.title,
+            oi.unit_price_cents,
+            oi.currency AS item_currency,
+
+            g.slug,
+            g.purchase_url,
+            g.price_cents,
+            g.currency AS game_currency,
+
+            u.email AS user_email
+        FROM orders o
+
+        JOIN order_items oi
+          ON oi.order_id = o.id
+
+        JOIN games g
+          ON g.id = oi.game_id
+
+        JOIN users u
+          ON u.id = o.user_id
+
+        WHERE o.id = $1
+          AND o.user_id = $2
+          AND o.status = 'pending'
+
+        LIMIT 1
+        `,
+        [orderId, userId]
+    );
+
+    return rows[0] || null;
+}
