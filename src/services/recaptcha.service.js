@@ -6,13 +6,17 @@ const RECAPTCHA_VERIFY_URL =
 
 export async function verifyRecaptcha(
   token,
-  remoteIp = undefined
+  remoteIp = undefined,
 ) {
   if (!env.recaptchaSecretKey) {
+    console.error(
+      '[recaptcha] RECAPTCHA_SECRET_KEY is not configured.'
+    );
+
     throw new AppError(
       500,
       'RECAPTCHA_NOT_CONFIGURED',
-      'reCAPTCHA is not configured on the server.'
+      'Request verification is temporarily unavailable.',
     );
   }
 
@@ -23,13 +27,13 @@ export async function verifyRecaptcha(
     throw new AppError(
       400,
       'RECAPTCHA_REQUIRED',
-      'Please complete the reCAPTCHA verification.'
+      'Please complete the reCAPTCHA verification.',
     );
   }
 
   const body = new URLSearchParams({
     secret: env.recaptchaSecretKey,
-    response: token,
+    response: token.trim(),
   });
 
   if (remoteIp) {
@@ -39,27 +43,40 @@ export async function verifyRecaptcha(
   let response;
 
   try {
-    response = await fetch(RECAPTCHA_VERIFY_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type':
-          'application/x-www-form-urlencoded',
+    response = await fetch(
+      RECAPTCHA_VERIFY_URL,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type':
+            'application/x-www-form-urlencoded',
+        },
+        body,
       },
-      body,
-    });
+    );
   } catch (error) {
+    console.error(
+      '[recaptcha] request failed:',
+      error?.message,
+    );
+
     throw new AppError(
       502,
       'RECAPTCHA_UNAVAILABLE',
-      'Unable to verify reCAPTCHA right now.'
+      'Unable to verify the request right now.',
     );
   }
 
   if (!response.ok) {
+    console.error(
+      '[recaptcha] Google returned HTTP',
+      response.status,
+    );
+
     throw new AppError(
       502,
       'RECAPTCHA_UNAVAILABLE',
-      'Unable to verify reCAPTCHA right now.'
+      'Unable to verify the request right now.',
     );
   }
 
@@ -68,18 +85,31 @@ export async function verifyRecaptcha(
   try {
     result = await response.json();
   } catch (error) {
+    console.error(
+      '[recaptcha] invalid Google response:',
+      error?.message,
+    );
+
     throw new AppError(
       502,
       'RECAPTCHA_INVALID_RESPONSE',
-      'Invalid response received from reCAPTCHA.'
+      'Unable to verify the request right now.',
     );
   }
 
-  if (!result.success) {
+  if (!result?.success) {
+    console.warn(
+      '[recaptcha] verification rejected:',
+      {
+        hostname: result?.hostname,
+        errorCodes: result?.['error-codes'],
+      },
+    );
+
     throw new AppError(
       400,
       'RECAPTCHA_FAILED',
-      'Please complete the reCAPTCHA verification.'
+      'Please complete the reCAPTCHA verification.',
     );
   }
 

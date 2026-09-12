@@ -18,31 +18,73 @@ function sha256(value) {
 }
 export async function requestPasswordReset(email) {
   const user = await findUserByEmail(email);
+
+  // Do not reveal whether the account exists.
   if (!user) {
-    await new Promise((r) => setTimeout(r, 250));
-    return { sent: true };
+    await new Promise((resolve) =>
+      setTimeout(resolve, 250)
+    );
+
+    return {
+      sent: true,
+    };
   }
 
-  const rawToken = crypto.randomBytes(32).toString('hex');
-  const tokenHash = sha256(rawToken);
-  const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
-  await createResetToken({ userId: user.id, tokenHash, expiresAt });
-  const resetUrl = `${env.frontendUrl}/reset-password?token=${rawToken}`;
-console.log('[password-reset] → enviando para:', user.email);
+  const rawToken =
+    crypto.randomBytes(32).toString('hex');
 
-sendPasswordResetEmail({
-  to: user.email,
-  username: user.username,
-  resetUrl,
-}).then((result) => {
-  console.log('[password-reset] ✓ resultado:', result);
-}).catch((err) => {
-  console.error('[password-reset] ✗ FALHOU:');
-  console.error('  status:', err.statusCode);
-  console.error('  body:', JSON.stringify(err.body || err.response?.body, null, 2));
-  console.error('  message:', err.message);
-});
-  return { sent: true };
+  const tokenHash =
+    sha256(rawToken);
+
+  const expiresAt =
+    new Date(Date.now() + TOKEN_TTL_MS);
+
+  await createResetToken({
+    userId: user.id,
+    tokenHash,
+    expiresAt,
+  });
+
+  if (!env.frontendUrl) {
+    console.error(
+      '[password-reset] FRONTEND_URL is not configured.'
+    );
+
+    throw new AppError(
+      500,
+      'PASSWORD_RESET_NOT_CONFIGURED',
+      'Password reset is temporarily unavailable.',
+    );
+  }
+
+  const resetUrl =
+    `${env.frontendUrl}/reset-password?token=${encodeURIComponent(rawToken)}`;
+
+  console.info(
+    '[password-reset] sending reset email',
+    {
+      userId: user.id,
+    },
+  );
+
+  const result =
+    await sendPasswordResetEmail({
+      to: user.email,
+      username: user.username,
+      resetUrl,
+    });
+
+  console.info(
+    '[password-reset] reset email accepted',
+    {
+      userId: user.id,
+      messageId: result?.messageId ?? null,
+    },
+  );
+
+  return {
+    sent: true,
+  };
 }
 
 export async function resetPassword({ token, password }) {

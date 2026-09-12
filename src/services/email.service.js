@@ -54,8 +54,14 @@ To reply, simply reply to this email – it will go directly to the user.
     console.error('Failed to send email:', err.message);
   }
 }
-export async function sendPasswordResetEmail({ to, username, resetUrl }) {
-  const safeName = username ? ` ${username}` : '';
+export async function sendPasswordResetEmail({
+  to,
+  username,
+  resetUrl,
+}) {
+  const safeName = username
+    ? ` ${username}`
+    : '';
 
   const text = `
 Hi${safeName},
@@ -72,31 +78,31 @@ If you didn't request this, you can safely ignore this email.
 
   const html = `
 <div style="font-family:system-ui,sans-serif;background:#0b0b0b;color:#eaeaea;padding:40px;border-radius:12px;max-width:520px;margin:auto;">
-  <h2 style="margin:0 0 16px;font-size:20px;">Reset your password</h2>
+  <h2 style="margin:0 0 16px;font-size:20px;">
+    Reset your password
+  </h2>
+
   <p style="color:#aaa;line-height:1.6;margin:0 0 24px;">
     Hi${safeName}, we received a request to reset your DEADSMILE password.
   </p>
-  <a href="${resetUrl}"
-     style="display:inline-block;background:#fff;color:#0b0b0b;padding:12px 22px;border-radius:999px;font-weight:700;text-decoration:none;">
+
+  <a
+    href="${resetUrl}"
+    style="display:inline-block;background:#fff;color:#0b0b0b;padding:12px 22px;border-radius:999px;font-weight:700;text-decoration:none;"
+  >
     Choose a new password
   </a>
+
   <p style="color:#666;font-size:12px;line-height:1.6;margin:24px 0 0;">
     This link expires in 1 hour. If you didn't request this, ignore this email.
   </p>
 </div>
   `.trim();
 
-  try {
-    await sendTransactionalEmail({
-      to,
-      subject: 'Reset your DEADSMILE password',
-      text,
-      html,
-    });
-  } catch (err) {
-    console.error('[email] ✗ password reset failed:');
-    console.error('  status:', err.statusCode);
-    console.error('  body:', JSON.stringify(err.body || err.response?.body, null, 2));
-    console.error('  message:', err.message);
-  }
+  return sendTransactionalEmail({
+    to,
+    subject: 'Reset your DEADSMILE password',
+    text,
+    html,
+  });
 }
