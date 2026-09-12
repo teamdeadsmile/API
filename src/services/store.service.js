@@ -1,10 +1,10 @@
-import { AppError } from '../utils/AppError.js';
 import {
     findPurchasableGameBySlug,
     findActiveEntitlement,
     listUserPurchases,
     listUserEntitlements,
 } from '../repositories/store.repository.js';
+import { AppError } from '../utils/AppError.js';
 
 export async function getCheckoutGame(slug) {
     const game = await findPurchasableGameBySlug(slug);
@@ -25,11 +25,13 @@ export async function getCheckoutGame(slug) {
         coverImage: game.cover_image,
         priceCents: game.price_cents,
         currency: game.currency,
+        purchaseUrl: game.purchase_url,
     };
 }
 
 export async function hasGameEntitlement(userId, gameId) {
     const entitlement = await findActiveEntitlement(userId, gameId);
+
     return Boolean(entitlement);
 }
 

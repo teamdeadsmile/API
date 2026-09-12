@@ -2,7 +2,8 @@ import { pool } from '../config/database.js';
 
 export async function findPurchasableGameBySlug(slug) {
     const { rows } = await pool.query(
-        `SELECT
+        `
+        SELECT
             id,
             title,
             slug,
@@ -11,10 +12,14 @@ export async function findPurchasableGameBySlug(slug) {
             price_cents,
             currency,
             purchase_url
-         FROM games
-         WHERE slug = $1
-           AND purchase_url IS NOT NULL
-         LIMIT 1`,
+        FROM games
+        WHERE slug = $1
+          AND purchase_url IS NOT NULL
+          AND price_cents IS NOT NULL
+          AND price_cents >= 0
+          AND currency IS NOT NULL
+        LIMIT 1
+        `,
         [slug]
     );
 

@@ -201,7 +201,7 @@ export function createApp() {
     app.use("/api/downloads", downloadsRouter);
     app.use("/api/products", productsRouter);
     app.use("/api/wishlist", wishlistRouter);
-    app.use("/api/store", storeRouter);
+    app.use('/api/store', storeRouter);
 
     app.use("/api", notFoundHandler);
     app.use(errorHandler);

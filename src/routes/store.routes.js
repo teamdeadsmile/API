@@ -18,6 +18,7 @@ storeRouter.get(
     })
 );
 
+
 storeRouter.get(
     '/purchases',
     requireAuth,
